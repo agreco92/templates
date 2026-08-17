@@ -8,13 +8,13 @@ As a staff bioinformatician I kept meeting datasets that needed the same preproc
 
 So I am collecting the R and Python scripts I have tried and tested, the ones that run almost identically across projects, and isolating their parameters in separate `.yaml` files.
 
-As the project has grown it has become a bit more general but less immediate. In its current version a couple of environment variables need to be set by the user (I suspect me only, for the time being :) ) and the Python environments have been added in an `envs/` folder.
+As the project has grown it has become a bit more general but less immediate. In its current version a couple of environment variables need to be set by the user and the Python environments have been added in an `envs/` folder.
 
 The next obvious steps are to turn these into proper Nextflow modules and to containerise the environments with Docker/Singularity.
 
 ------------------------------------------------------------------------
 
-## Technical readme (thanks Claude!)
+## Technical readme (Claude)
 
 ### Pinning a version
 
