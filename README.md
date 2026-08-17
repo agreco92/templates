@@ -1,4 +1,4 @@
-# templates2
+# templates
 
 > Work in progress. Paths, conventions and the config contract can still change on `main`. Pin a tagged release if a project depends on specific behavior.
 
