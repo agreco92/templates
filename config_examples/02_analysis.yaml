@@ -1,0 +1,347 @@
+# Configuration for 02_analysis module
+# Reference mapping and downstream analysis
+
+00_map_to_reference:
+  # Input paths
+  # reference_path: path to reference Seurat object (must have reductions for mapping)
+  reference_path: "path/to/reference.rds"
+  
+  # query_path: path to query Seurat object to map
+  query_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+  
+  # Output directories (use glue syntax with projectDir)
+  dir_output: "{projectDir}/data/02_analysis/00_map_to_reference/"
+  dir_figures: "{projectDir}/figures/02_analysis/00_map_to_reference/"
+  
+  # Assay and batch settings
+  assay_use: "RNA"
+  batch_column: null  # set to column name (e.g., "sample_id") to split layers before mapping
+  
+  # Metadata columns
+  sample_column: "sample_id"
+  
+  # Anchor finding settings
+  ref_anchors:
+    dr: "pca"          # REQUIRED: reduction in reference for anchor finding
+    n_dims: 20         # number of dimensions to use (default: 20)
+  
+  # UMAP settings for reference (three modes, in priority order):
+  #   1. precomputed: use existing UMAP reduction in reference (no recomputation)
+  #   2. precomputed_nn: compute UMAP from pre-computed NN graph (e.g., WNN)
+  #   3. dr: compute UMAP from a dimensionality reduction
+  ref_umap:
+    precomputed: null       # name of existing UMAP reduction (e.g., "umap")
+    precomputed_nn: null    # NN graph name for WNN-based UMAP (e.g., "weighted.nn")
+    dr: "pca"               # reduction to compute UMAP from (e.g., "pca", "integrated.rpca")
+    n_dims: 20              # dims for UMAP computation (default: same as ref_anchors$n_dims)
+    name: "umap"            # name for output UMAP reduction (default: "umap")
+    densmap: false          # use densMAP for visualization (default: false)
+  
+  # refdata: REQUIRED - defines what to transfer from reference to query
+  # Keys become prediction column names, values are reference metadata columns
+  refdata:
+    celltype: "cell_type"       # creates predicted.celltype -> ref_celltype
+    celltype2: "cell_type2"     # creates predicted.celltype2 -> ref_celltype2
+    # predicted_ADT: "ADT"      # uncomment to transfer ADT predictions
+  
+  # output_prefix: prefix for renamed prediction columns (default: "ref")
+  output_prefix: "ref"
+
+
+# Example configurations for different mapping scenarios
+# --------------------------------------------------------
+
+# Example 1: Simple PCA-based mapping
+# Use when reference has standard PCA reduction
+#
+# 00_map_simple:
+#   reference_path: "path/to/reference.rds"
+#   query_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+#   
+#   dir_output: "{projectDir}/data/02_analysis/00_map_simple/"
+#   dir_figures: "{projectDir}/figures/02_analysis/00_map_simple/"
+#   
+#   sample_column: "sample_id"
+#   
+#   ref_anchors:
+#     dr: "integrated.rpca"
+#     n_dims: 20
+#   
+#   ref_umap:
+#     dr: "integrated.rpca"
+#     n_dims: 20
+#     densmap: true
+#   
+#   refdata:
+#     celltype: "cell_type"
+#   
+#   output_prefix: "mapped"
+
+
+# Example 2: WNN-based mapping (using pre-computed NN graph)
+# Use when reference has WNN graph from multimodal integration
+#
+# 00_map_to_LCA:
+#   reference_path: "/path/to/liver_cell_atlas/seurat_object.rds"
+#   query_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+#   
+#   dir_output: "{projectDir}/data/02_analysis/00_map_to_LCA/"
+#   dir_figures: "{projectDir}/figures/02_analysis/00_map_to_LCA/"
+#   
+#   sample_column: "sample_id"
+#   
+#   ref_anchors:
+#     dr: "spca"
+#     n_dims: 20
+#   
+#   ref_umap:
+#     precomputed_nn: "weighted.nn"
+#     name: "wnn.umap"
+#   
+#   refdata:
+#     celltype_wnn: "cell_type"
+#     celltype2_wnn: "cell_type2"
+#     predicted_ADT: "ADT"
+#   
+#   output_prefix: "lca"
+
+
+# Example 3: Using pre-computed UMAP
+# Use when reference already has the UMAP you want to use
+#
+# 00_map_precomputed:
+#   reference_path: "path/to/reference.rds"
+#   query_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+#   
+#   dir_output: "{projectDir}/data/02_analysis/00_map_precomputed/"
+#   dir_figures: "{projectDir}/figures/02_analysis/00_map_precomputed/"
+#   
+#   sample_column: "sample_id"
+#   
+#   ref_anchors:
+#     dr: "pca"
+#     n_dims: 30
+#   
+#   ref_umap:
+#     precomputed: "umap"   # use existing UMAP, don't recompute
+#   
+#   refdata:
+#     celltype: "cell_type"
+#   
+#   output_prefix: "ref"
+
+
+# ========================================================================
+# Differential Expression Analysis
+# ========================================================================
+
+02_celltype_DEG_edgeR:
+  # Input path to annotated Seurat object with cell type annotations
+  input_path: "data/02_analysis/01_cellcycle_analysis/cc_annotated.rds"
+  
+  # Output directories (use glue syntax with projectDir)
+  dir_output: "{projectDir}/data/02_analysis/02_celltype_DGE/"
+  dir_figures: "{projectDir}/figures/02_analysis/02_celltype_DGE/"
+  
+  # Metadata column names
+  sample_column: "sample_id"           # Column identifying biological replicates
+  condition_column: "condition"        # Column with treatment conditions
+  celltype_column: "cell_type"         # Column with cell type annotations
+  
+  # Condition labels (for setting reference level in DE comparison)
+  control_condition: "control"         # Reference condition name
+  case_condition: "treatment"          # Treatment condition name
+  
+  # Pseudobulk parameters
+  min_cells: 10  # Minimum cells per celltype per sample (filters low-quality pseudobulk)
+  
+  # DE thresholds for significance calling
+  de_thresholds:
+    fdr: 0.05      # False discovery rate threshold
+    logfc: 1       # Log2 fold-change threshold (absolute value)
+  
+  # Volcano plot visualization settings
+  volcano:
+    top_genes_label: 10  # Number of top DEGs to label on volcano plot
+
+
+# ========================================================================
+# Cell Cycle Analysis
+# ========================================================================
+
+03_cellcycle_analysis:
+  # Input path to Seurat object
+  input_path: "data/01_preprocessing_liu_skin/02_merge_samples_imq_only/merged.rds"
+  # Output directories
+  dir_output: "{projectDir}/data/01_preprocessing_liu_skin/03_cellcycle_analysis/"
+  dir_figures: "{projectDir}/figures/01_preprocessing_liu_skin/03_cellcycle_analysis/"
+  
+  # Metadata column names (set to null if not present in dataset)
+  # group_column: "lca_celltype"      # Column to group cells by (e.g., celltype, cluster)
+  sample_column: "sample_id"        # Column identifying biological samples (null if single sample)
+  condition_column: "condition"     # Column with experimental conditions (null if no conditions)
+  # control_condition: "VAS"          # Control condition for filtering trend plot (null to use all)
+  
+  # Cell cycle gene paths (null = use default location)
+  g2m_genes_path: null
+  s_genes_path: null
+  
+  # Tricycle thresholds for G1 classification
+  # Cells with tricycle_position < g1_lower OR > g1_upper are classified as G1
+  tricycle_thresholds:
+    g1_lower: 0.6
+    g1_upper: 5.2
+  
+  # Filtering thresholds
+  min_cells_trend: 500      # Min cells per group for trend plot
+
+
+# ========================================================================
+# sciRED Factor Analysis (Python)
+# ========================================================================
+# Runs sciRED (Single-Cell Interpretable REsidual Decomposition) to identify
+# factor-covariate associations. Requires conda env with sciRED installed.
+#
+# Pipeline: raw counts → Poisson GLM → Pearson residuals → PCA → varimax →
+#           FCA heatmap + FIS table
+#
+# NOTE: sciRED expects RAW COUNTS (not log-normalized). The Poisson GLM with
+# library size as covariate IS the normalization step.
+# NOTE: Do NOT regress out batch in the GLM — include it as a covariate for
+# FCA interpretation instead. The paper recommends merging without batch
+# correction and letting sciRED identify batch-associated factors.
+
+04_sciRED_factor_analysis:
+  # Input: path to .h5ad file with raw counts in adata.X
+  input_path: "{projectDir}/data/02_analysis/anndata_counts.h5ad"
+
+  # Output directories
+  dir_output: "{projectDir}/data/02_analysis/04_sciRED_factor_analysis/"
+  dir_figures: "{projectDir}/figures/02_analysis/04_sciRED_factor_analysis/"
+
+  # --- Factor discovery parameters ---
+  n_components: 30          # Number of factors (PCA components before rotation)
+  n_genes: 2000             # Top variable genes for analysis
+
+  # --- GLM covariates ---
+  # lib_size_col: library size column in adata.obs (used by Poisson GLM)
+  lib_size_col: "nCount_RNA"
+  # technical_covariates: additional covariates to regress out in GLM
+  #   - null: only library size (recommended default)
+  #   - list of adata.obs column names to include as one-hot encoded covariates
+  #   - WARNING: regressing out sample/batch can remove biological signal
+  technical_covariates: null
+
+  # --- Biological covariates for FCA ---
+  # These are NOT regressed out — they are used to interpret factors
+  covariates:
+    - age
+    - sex
+    - genotype
+    - batch
+
+  # --- FCA classifier settings ---
+  fca_scale: "standard"     # scaling: "standard", "minmax", or "rank"
+  fca_mean: "arithmatic"    # mean type: "arithmatic" or "geometric" (sic, sciRED typo)
+  fca_time_eff: true        # skip RandomForest (slower, marginal improvement)
+
+  # --- Output settings ---
+  n_top_genes: 30           # top genes per factor to report
+  seed: 10
+
+
+# Example: project-specific overrides
+# Uncomment and adapt for your project's YAML (not the template example)
+#
+# 04_sciRED_developmental:
+#   input_path: "{projectDir}/data/03_LSEC_analysis/03_factor_analysis/00_adata_counts.h5ad"
+#   dir_output: "{projectDir}/data/03_LSEC_analysis/03_factor_analysis/00_sciRED/"
+#   dir_figures: "{projectDir}/figures/03_LSEC_analysis/03_factor_analysis/00_sciRED/"
+#   covariates:
+#     - age
+#     - sex
+#     - genotype
+#     - batch
+#   n_components: 30
+#   n_genes: 2000
+
+
+# ========================================================================
+# Clustering Benchmark
+# ========================================================================
+# Evaluates clustering quality using metrics from OSCA Advanced Chapter 5
+# (bluster/scran). Computes silhouette widths, neighbor purity, RMSD,
+# graph modularity. Optionally compares multiple clusterings, runs
+# bootstrap stability, or sweeps parameters.
+
+05_benchmark_clustering:
+  # Input: Seurat object with clustering results and a dim reduction
+  input_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+
+  # Output directories
+  dir_output: "{projectDir}/data/02_analysis/05_benchmark_clustering/"
+  dir_figures: "{projectDir}/figures/02_analysis/05_benchmark_clustering/"
+
+  # --- Which clusterings to evaluate ---
+  # Single column or list of columns from metadata
+  cluster_columns:
+    - "seurat_clusters"
+  # - "RNA_snn_res.0.3"    # uncomment to compare multiple resolutions
+  # - "RNA_snn_res.1"
+
+  # --- Dimensionality reduction for distance-based metrics ---
+  # Use the reduction that clustering was based on (pca, harmony, integrated.rpca, etc.)
+  reduction: "pca"
+  dims: 30                    # number of dims from the reduction to use
+
+  # --- UMAP for diagnostic overlay plots ---
+  umap_reduction: "umap"      # set to null to skip UMAP plots
+
+  # --- Metric parameters ---
+  purity_k: 50                # k neighbors for purity (higher = smoother, less sensitive)
+
+  # --- Graph modularity ---
+  # Measures edge density within vs between clusters
+  modularity: true            # set false to skip
+  graph_name: null            # auto-detect SNN graph; or specify e.g. "RNA_snn"
+  rebuild_graph: false        # true = build fresh SNN from reduction (ignores stored graph)
+  snn_k: 20                  # k for SNN construction (only if rebuild_graph: true)
+  snn_type: "jaccard"         # "jaccard" or "rank" (only if rebuild_graph: true)
+
+  # --- Parameter sweep (off by default) ---
+  # Systematically varies k and clustering algorithm, computes silhouette for each
+  sweep:
+    enabled: false
+    k_values: [5, 10, 15, 20, 25, 30, 35, 40]
+    cluster_fun:
+      - "louvain"
+      - "walktrap"
+
+
+# Example: benchmarking multiple resolutions after FindClusters
+#
+# 05_benchmark_multi_res:
+#   input_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+#   dir_output: "{projectDir}/data/02_analysis/05_benchmark_multi_res/"
+#   dir_figures: "{projectDir}/figures/02_analysis/05_benchmark_multi_res/"
+#   cluster_columns:
+#     - "RNA_snn_res.0.1"
+#     - "RNA_snn_res.0.3"
+#     - "RNA_snn_res.0.5"
+#     - "RNA_snn_res.1"
+#   reduction: "harmony"
+#   dims: 30
+#   purity_k: 50
+#   modularity: true
+#   rebuild_graph: true       # rebuild from harmony reduction, not stored RNA_snn
+#   snn_k: 20
+#
+# Example: quick benchmark on a subset
+#
+# 05_benchmark_subset:
+#   input_path: "data/02_analysis/subset_celltypeX.rds"
+#   dir_output: "{projectDir}/data/02_analysis/05_benchmark_celltypeX/"
+#   dir_figures: "{projectDir}/figures/02_analysis/05_benchmark_celltypeX/"
+#   cluster_columns: ["sub_clusters"]
+#   reduction: "pca"
+#   dims: 20

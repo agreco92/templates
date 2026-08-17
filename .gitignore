@@ -1,0 +1,38 @@
+# Editor / IDE
+*.code-workspace
+.vscode/
+.Rproj.user/
+*.Rproj
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rapp.history
+renv/library/
+renv/local/
+renv/staging/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/worktrees/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nothing in this repo should accumulate data or results; templates write into
+# the *consuming project's* tree, not here.
+data/
+results/
+figures/
+docs/
+
+*.rds
+*.h5ad

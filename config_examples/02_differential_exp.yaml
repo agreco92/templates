@@ -1,0 +1,28 @@
+02_celltype_DEG_edgeR:
+  # Input path to merged/annotated Seurat object
+  input_path: "data/02_differential_exp/01_cellcycle_analysis/cc_annotated.rds"
+  
+  # Output directories
+  dir_output: "{projectDir}/data/02_differential_exp/02_celltype_DGE/"
+  dir_figures: "{projectDir}/figures/02_differential_exp/02_celltype_DGE/"
+  
+  # Metadata column names
+  sample_column: "sample_id"
+  condition_column: "condition"
+  celltype_column: "lca_celltype"
+  
+  # Condition labels (for setting reference level)
+  control_condition: "VAS"
+  case_condition: "IMQ"
+  
+  # Pseudobulk parameters
+  min_cells: 10  # Minimum cells per pseudobulk sample
+  
+  # DE thresholds for significance
+  de_thresholds:
+    fdr: 0.05
+    logfc: 1
+  
+  # Volcano plot settings
+  volcano:
+    top_genes_label: 10

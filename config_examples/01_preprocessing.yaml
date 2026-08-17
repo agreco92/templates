@@ -1,0 +1,99 @@
+00_cellcalling_demux:
+  # sample_dir: path to directory containing sample folders
+  sample_dir: data/00_download_data/
+  # sample_subpath: subfolder within sample containing raw matrix
+  sample_subpath: "outs/raw_feature_bc_matrix"
+  # dropletutils_fdr: FDR threshold for emptyDrops cell calling
+  dropletutils_fdr: 0.001778279  # 10^(-2.75)
+  # hto_demultiplex: whether to run HTO demultiplexing
+  hto_demultiplex: false
+  # ambient_correction: whether to run SoupX ambient RNA correction
+  ambient_correction: true
+  # dir_output/dir_figures: output directories (use glue syntax with sample_id)
+  dir_output: "{projectDir}/data/01_preprocessing/00_cellcalling_demux_soupX/{sample_id}"
+  dir_figures: "{projectDir}/figures/01_preprocessing/00_cellcalling_demux_soupX/{sample_id}"
+
+01_qc_normalize_dr:
+  # sample_dir: path to directory containing sample folders
+  sample_dir: data/01_preprocessing/00_cellcalling_demux_soupX
+  # input_filename: name of .rds file to load from sample_dir/sample_id/
+  #   - set to specific filename (e.g., "cell_call_demux.rds") to use that file
+  #   - set to null or "auto" to auto-detect single .rds file in folder
+  input_filename: "cell_call_demux.rds"
+  # dir_output/dir_figures: output directories (use glue syntax with params.json vars)
+  dir_output: "{projectDir}/data/01_preprocessing/01_qc_normalize_dr/{sample_id}"
+  dir_figures: "{projectDir}/figures/01_preprocessing/01_qc_normalize_dr/{sample_id}"
+  # remove_doublets: whether to run scDblFinder and remove detected doublets
+  remove_doublets: true
+  # ambient_corrected_counts: filename of SoupX-corrected counts in sample folder
+  #   - set to null to skip ambient RNA correction
+  ambient_corrected_counts: ambient_corrected_counts.rds
+  # qc_thresholds: cell filtering thresholds
+  qc_thresholds:
+    min_counts_log10: 3.6
+    max_mito_pct: 10
+    max_hb_pct: 0.05
+  # split_by: metadata column to use for splitting QC plots (null = use Sample)
+  split_by: null
+  # exclude: filter out cells based on metadata, e.g.: {tech: ["nucSeq"]}
+  exclude: null
+  # cluster_res: resolution for Seurat clustering
+  cluster_res: 0.1
+
+
+02_merge_samples:
+  sample_dir: data/01_preprocessing/01_qc_normalize_dr
+
+  dir_output: "{projectDir}/data/01_preprocessing/02_merge_samples/"
+  dir_figures: "{projectDir}/figures/01_preprocessing/02_merge_samples/"
+
+  sample_column: sample_id
+  batch_column: sample_id
+  cluster_res: 0.2
+  
+  # sample_exclusion_pattern: regex to exclude samples (null = include all)
+  sample_exclude_regex: null
+  
+  # integration: batch correction settings
+  integration:
+    enabled: false
+    method: "rpca"  # "rpca" or "cca"
+  
+  contamination_markers:
+    erythroid: ["Gata1", "Klf1", "Ermap", "Car2", "Car1"]
+    platelet: ["Pf4", "Itga2b", "Tubb1"]
+  contamination_thresholds:
+    erythroid: 0.5
+    platelet: 1.0
+  condition_regex:
+    column: sample_id # barcode, sample, condition itself for renaming
+    default: "VAS" # for initial assignment
+    dict:
+      IMQ: "^I"
+
+
+# Sample-specific parameters
+
+## in-house dataset
+
+I1:
+  00_cellcalling_demux:
+    dropletutils_fdr: 0.00125
+  01_qc_normalize_dr:
+    # Example: override output for specific sample
+    # dir_output: "./custom_output/I1"
+I3:
+  00_cellcalling_demux:
+    dropletutils_fdr: 0.001
+I4:
+  00_cellcalling_demux:
+    dropletutils_fdr: 0.001
+V1:
+  00_cellcalling_demux:
+    dropletutils_fdr: 0.001
+V2:
+  00_cellcalling_demux:
+    dropletutils_fdr: 0.001
+V4:
+  00_cellcalling_demux:
+    dropletutils_fdr: 0.001

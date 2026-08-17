@@ -1,0 +1,51 @@
+Package: templates2
+Title: scRNA-seq Processing Template Library
+Version: 0.1.0
+Authors@R:
+    person("AlGreco92", email = "agreco.scholar@gmail.com", role = c("aut", "cre"))
+Description: A library of standalone R and Python analysis templates for
+    single-cell RNA-seq processing, driven by per-project YAML config.
+    Will eventually cram the utils into a real package. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+biocViews:
+Imports:
+    batchelor,
+    BiocGenerics,
+    bluster,
+    clusterProfiler,
+    colorspace,
+    cowplot,
+    dplyr,
+    DropletUtils,
+    edgeR,
+    enrichplot,
+    ggbeeswarm,
+    ggplot2,
+    ggpubr,
+    ggrastr,
+    ggrepel,
+    ggthemes,
+    glue,
+    igraph,
+    jsonlite,
+    msigdbr,
+    nichenetr,
+    optparse,
+    patchwork,
+    pheatmap,
+    renv,
+    reticulate,
+    scCustomize,
+    scDblFinder,
+    scran,
+    scuttle,
+    Seurat,
+    SingleCellExperiment,
+    SoupX,
+    SummarizedExperiment,
+    tidyverse,
+    tricycle,
+    yaml
+Remotes:
+    saeyslab/nichenetr

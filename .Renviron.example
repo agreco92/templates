@@ -1,0 +1,15 @@
+# Copy the relevant lines into your own .Renviron, then restart R.
+#
+#   ~/.Renviron              applies to everything you run
+#   <project>/.Renviron      applies to that project only, and SHADOWS the
+#                            home one completely rather than adding to it
+#
+# Under Nextflow, set the same variables per process via `env` in
+# nextflow.config, or bake them into the container.
+
+# Where templates2 is checked out. Templates load code/utils/ from here.
+TEMPLATES2_HOME=/path/to/templates2
+
+# Python interpreter for reticulate (Leiden clustering, densMAP).
+# See envs/reticulate.yml.
+RETICULATE_PYTHON=/path/to/micromamba/envs/templates2-reticulate/bin/python

@@ -1,0 +1,165 @@
+# Configuration for 02_analysis module
+# Enrichment analysis and downstream analysis
+
+# ========================================================================
+# Enrichment Analysis
+# ========================================================================
+
+03_enrichment:
+  # Output directories (use glue syntax with projectDir)
+  dir_output: "{projectDir}/data/02_analysis/03_enrichment/"
+  dir_figures: "{projectDir}/figures/02_analysis/03_enrichment/"
+
+  # -----------------------------------------------------------------------
+  # MSigDB Gene Set Configuration
+  # -----------------------------------------------------------------------
+  msigdb:
+    # Species settings
+    db_species: "MM"           # Database species code (MM, HS, etc.)
+    species: "Mus musculus"    # Full species name
+
+    # Canonical pathways (typically M2 collection)
+    canonical:
+      collection: "M2"         # MSigDB collection
+      subcollection: "CP"      # Subcollection (CP, CP:KEGG, CP:REACTOME, etc.)
+
+    # GO terms (typically M5 collection)
+    go:
+      collection: "M5"         # MSigDB collection
+      subcollection: null      # Subcollection (GO:BP, GO:MF, GO:CC, or null for all)
+
+  # -----------------------------------------------------------------------
+  # Differential Expression Input
+  # -----------------------------------------------------------------------
+  # Directory containing DE result CSV files (all .csv files will be analyzed)
+  de_input_dir: "data/02_analysis/02_celltype_DGE/"
+
+  # Optional: pattern to exclude files (regex applied to filename)
+  file_exclude: "_summary"     # e.g., excludes "results_summary.csv"
+
+  # Column names in DE result files
+  de_columns:
+    gene: "gene"              # Column with gene symbols
+    logfc: "logFC"            # Column with log2 fold change
+    pval_adj: "FDR"           # Column with adjusted p-value (preferred)
+    # pval: "pvalue"          # Column with raw p-value (fallback if pval_adj not set)
+
+  # Significance thresholds for ORA (over-representation analysis)
+  de_thresholds:
+    logfc: 0.5                # Absolute log2 fold change threshold
+    pval_adj: 0.05            # Adjusted p-value threshold
+
+  # -----------------------------------------------------------------------
+  # GSEA Settings
+  # -----------------------------------------------------------------------
+  gsea:
+    pvalue_cutoff: 1          # p-value cutoff for GSEA results (1 = keep all)
+
+
+# ========================================================================
+# Example: Human data with KEGG and Reactome only
+# ========================================================================
+
+03_enrichment_human:
+  dir_output: "{projectDir}/data/02_analysis/03_enrichment/"
+  dir_figures: "{projectDir}/figures/02_analysis/03_enrichment/"
+
+  msigdb:
+    db_species: "HS"
+    species: "Homo sapiens"
+
+    canonical:
+      collection: "M2"
+      subcollection: "CP:KEGG"  # Only KEGG pathways
+
+    go:
+      collection: "M5"
+      subcollection: "GO:BP"    # Only Biological Process
+
+  de_input_dir: "data/02_analysis/02_DE/"
+  file_exclude: null            # No exclusion
+
+  de_columns:
+    gene: "symbol"
+    logfc: "log2FoldChange"
+    pval_adj: "padj"
+
+  de_thresholds:
+    logfc: 1.0
+    pval_adj: 0.01
+
+  gsea:
+    pvalue_cutoff: 0.25
+
+
+# ========================================================================
+# Example: Hallmark gene sets only
+# ========================================================================
+
+03_enrichment_hallmark:
+  dir_output: "{projectDir}/data/02_analysis/03_enrichment_hallmark/"
+  dir_figures: "{projectDir}/figures/02_analysis/03_enrichment_hallmark/"
+
+  msigdb:
+    db_species: "MM"
+    species: "Mus musculus"
+
+    # Use Hallmark collection instead of canonical
+    canonical:
+      collection: "H"          # Hallmark gene sets
+      subcollection: null      # No subcollection for Hallmark
+
+    go:
+      collection: "M5"
+      subcollection: "GO:BP"   # BP only for focused analysis
+
+  de_input_dir: "data/02_analysis/01_DE/"
+  file_exclude: null
+
+  de_columns:
+    gene: "gene"
+    logfc: "avg_log2FC"
+    pval_adj: "p_val_adj"
+
+  de_thresholds:
+    logfc: 0.25
+    pval_adj: 0.05
+
+  gsea:
+    pvalue_cutoff: 0.5
+
+
+# ========================================================================
+# Example: Reactome pathways with strict thresholds
+# ========================================================================
+
+03_enrichment_reactome:
+  dir_output: "{projectDir}/data/02_analysis/03_enrichment_reactome/"
+  dir_figures: "{projectDir}/figures/02_analysis/03_enrichment_reactome/"
+
+  msigdb:
+    db_species: "MM"
+    species: "Mus musculus"
+
+    canonical:
+      collection: "M2"
+      subcollection: "CP:REACTOME"  # Only Reactome pathways
+
+    go:
+      collection: "M5"
+      subcollection: "GO:BP"
+
+  de_input_dir: "data/02_analysis/02_celltype_DGE/"
+  file_exclude: "summary|merged"  # Exclude files containing "summary" or "merged"
+
+  de_columns:
+    gene: "gene"
+    logfc: "logFC"
+    pval_adj: "FDR"
+
+  de_thresholds:
+    logfc: 1.0
+    pval_adj: 0.01
+
+  gsea:
+    pvalue_cutoff: 0.1

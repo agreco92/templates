@@ -1,0 +1,86 @@
+# Configuration for 03_signalling module
+# NicheNet ligand-receptor signalling analysis
+
+# NicheNet sender-agnostic analysis
+# Predicts which ligands from any cell type regulate DE genes in the receiver
+00_nichenet_agnostic:
+  # Input paths
+  seu_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+  de_receiver_path: "data/02_differential_exp/02_celltype_DGE/{receiver}.csv"
+  
+  # NicheNet reference networks (species-specific)
+  # Download from: https://zenodo.org/record/7074291
+  lr_network_path: "data/reference/lr_network_mouse_21122021.rds"
+  ligand_target_matrix_path: "data/reference/ligand_target_matrix_nsga2r_final_mouse.rds"
+  weighted_networks_path: "data/reference/weighted_networks_nsga2r_final_mouse.rds"
+  
+  # Output directories (use glue syntax with projectDir and receiver)
+  dir_output: "{projectDir}/data/03_signalling/00_nichenet/{receiver}"
+  dir_figures: "{projectDir}/figures/03_signalling/00_nichenet/{receiver}"
+  
+  # Cell type settings
+  celltype_col: "celltype"          # metadata column with cell type annotations
+  receiver: "Macrophage"            # receiver cell type of interest
+  
+  # Gene expression threshold
+  pct_expressed_thr: 0.1            # minimum % cells expressing gene (default: 0.1)
+  
+  # Differential expression thresholds for gene set of interest
+  de_fdr_threshold: 0.05            # FDR threshold for DE genes
+  de_logfc_threshold: 0.5           # absolute log2FC threshold for DE genes
+  
+  # NicheNet analysis parameters
+  n_top_ligands: 30                 # number of top ligands to analyze
+  n_target_genes: 50                # number of target genes per ligand (controls heatmap size)
+  regulatory_potential_cutoff: 0.25 # cutoff for ligand-target visualization
+
+
+# Example: Analysis for a specific cell type
+# ------------------------------------------
+# 00_nichenet_tcell:
+#   seu_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+#   de_receiver_path: "data/02_differential_exp/02_celltype_DGE/T_cell.csv"
+#   
+#   lr_network_path: "data/reference/lr_network_mouse_21122021.rds"
+#   ligand_target_matrix_path: "data/reference/ligand_target_matrix_nsga2r_final_mouse.rds"
+#   weighted_networks_path: "data/reference/weighted_networks_nsga2r_final_mouse.rds"
+#   
+#   dir_output: "{projectDir}/data/03_signalling/00_nichenet/{receiver}"
+#   dir_figures: "{projectDir}/figures/03_signalling/00_nichenet/{receiver}"
+#   
+#   celltype_col: "celltype"
+#   receiver: "T_cell"
+#   
+#   pct_expressed_thr: 0.1
+#   de_fdr_threshold: 0.05
+#   de_logfc_threshold: 0.5
+#   
+#   n_top_ligands: 30
+#   n_target_genes: 50
+#   regulatory_potential_cutoff: 0.25
+
+
+# Example: Human data analysis
+# ----------------------------
+# 00_nichenet_human:
+#   seu_path: "data/01_preprocessing/02_merge_samples/merged.rds"
+#   de_receiver_path: "data/02_differential_exp/02_celltype_DGE/Fibroblast.csv"
+#   
+#   # Use human-specific networks
+#   lr_network_path: "data/reference/lr_network_human_21122021.rds"
+#   ligand_target_matrix_path: "data/reference/ligand_target_matrix_nsga2r_final.rds"
+#   weighted_networks_path: "data/reference/weighted_networks_nsga2r_final.rds"
+#   
+#   dir_output: "{projectDir}/data/03_signalling/00_nichenet/{receiver}"
+#   dir_figures: "{projectDir}/figures/03_signalling/00_nichenet/{receiver}"
+#   
+#   celltype_col: "cell_annotation"
+#   receiver: "Fibroblast"
+#   
+#   pct_expressed_thr: 0.1
+#   de_fdr_threshold: 0.05
+#   de_logfc_threshold: 0.25
+#   
+#   n_top_ligands: 25
+#   n_target_genes: 40
+#   regulatory_potential_cutoff: 0.2

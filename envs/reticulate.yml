@@ -1,0 +1,15 @@
+# Python pkgs for densmap, leiden
+# micromamba env create -f envs/reticulate.yml
+# echo "RETICULATE_PYTHON=$(micromamba info --base)/envs/templates2-reticulate/bin/python" >> ~/.Renviron
+
+name: templates2-reticulate
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - leidenalg
+  - python-igraph
+  # densMAP needs umap-learn >= 0.5;
+  - umap-learn=0.5.8
+  # used by code/snippets/02_convert_to_adata.R via scCustomize::as.anndata().
+  - anndata

@@ -1,0 +1,113 @@
+01_qc_normalize_dr:
+  sample_dir: data/01_preprocessing_liu_skin/00_raw_seurat_objects
+  # auto-detect .rds file since Liu samples have different naming
+  input_filename: null
+  dir_output: "{projectDir}/data/01_preprocessing_liu_skin/01_qc_normalize_dr/{sample_id}"
+  dir_figures: "{projectDir}/figures/01_preprocessing_liu_skin/01_qc_normalize_dr/{sample_id}"
+  remove_doublets: true
+  ambient_corrected_counts: null
+  qc_thresholds:
+    min_counts_log10: 3.2
+    max_mito_pct: 10
+    max_hb_pct: 0.05
+  split_by: null
+  exclude: null
+  cluster_res: 0.1
+
+02_merge_samples:
+  sample_dir: data/01_preprocessing_liu_skin/01_qc_normalize_dr
+  sample_column: sample_id
+  batch_column: sample_id
+  dir_output: "{projectDir}/data/01_preprocessing_liu_skin/02_merge_samples_imq_only/"
+  dir_figures: "{projectDir}/figures/01_preprocessing_liu_skin/02_merge_samples_imq_only/"
+  cluster_res: 0.15
+  
+  # sample_exclusion_pattern: regex to exclude samples (null = include all)
+  sample_exclude_regex: "^OXA"
+  
+  # integration: batch correction settings
+  integration:
+    enabled: false
+    method: "rpca"
+
+# Configuration for differential expression analysis scripts
+
+03_cellcycle_analysis:
+  # Input path to Seurat object
+  input_path: "data/01_preprocessing_liu_skin/02_merge_samples_imq_only/merged.rds"
+  # Output directories
+  dir_output: "{projectDir}/data/01_preprocessing_liu_skin/03_cellcycle_analysis/"
+  dir_figures: "{projectDir}/figures/01_preprocessing_liu_skin/03_cellcycle_analysis/"
+  
+  # Metadata column names (set to null if not present in dataset)
+  # group_column: "lca_celltype"      # Column to group cells by (e.g., celltype, cluster)
+  sample_column: "sample_id"        # Column identifying biological samples (null if single sample)
+  condition_column: "condition"     # Column with experimental conditions (null if no conditions)
+  # control_condition: "VAS"          # Control condition for filtering trend plot (null to use all)
+  
+  # Cell cycle gene paths (null = use default location)
+  g2m_genes_path: null
+  s_genes_path: null
+  
+  # Tricycle thresholds for G1 classification
+  # Cells with tricycle_position < g1_lower OR > g1_upper are classified as G1
+  tricycle_thresholds:
+    g1_lower: 0.6
+    g1_upper: 5.2
+  
+  # Filtering thresholds
+  min_cells_trend: 500      # Min cells per group for trend plot
+
+
+
+## Liu skin samples
+
+IMQ-C_Rep1:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 3.15
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+IMQ-C_Rep3:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 3.15
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+OXA_Rep1:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 2.55
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+OXA_Rep2:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 2.5
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+OXA_Rep3:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 2.5
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+OXA-C_Rep1:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 3
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+OXA-C_Rep2:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 3
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+OXA-C_Rep3:
+  01_qc_normalize_dr:
+    qc_thresholds:
+      min_counts_log10: 3
+      max_mito_pct: 10
+      max_hb_pct: 0.05
+

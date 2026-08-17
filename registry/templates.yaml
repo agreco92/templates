@@ -1,0 +1,90 @@
+# Template catalog. Parameters are not documented here, they live in
+# config_examples/<module>.yaml. Paths are relative to the repo root.
+#
+# granularity: per_sample = one run per sample, aggregate = one run total.
+# conda_env:   which envs/<name>.yml the stage needs, null = pure R.
+
+templates:
+
+  # --- 01_preprocessing -----------------------------------------------------
+  - id: 00_cellcalling_demux
+    script: code/01_preprocessing/00_cellcalling_demux_soupX.R
+    runtime: r
+    granularity: per_sample
+    conda_env: templates2-reticulate
+    summary: emptyDrops cell calling, optional HTO demux, SoupX ambient correction.
+    config_example: config_examples/01_preprocessing.yaml
+
+  - id: 01_qc_normalize_dr
+    script: code/01_preprocessing/01_qc_normalize_dr.R
+    runtime: r
+    granularity: per_sample
+    conda_env: templates2-reticulate
+    summary: QC filtering, pooled normalization, PCA/UMAP, clustering, markers.
+    config_example: config_examples/01_preprocessing.yaml
+
+  - id: 02_merge_samples
+    script: code/01_preprocessing/02_merge_samples.R
+    runtime: r
+    granularity: aggregate
+    conda_env: templates2-reticulate
+    summary: merge per-sample objects, optional integration, contamination removal.
+    config_example: config_examples/01_preprocessing.yaml
+
+  # --- 02_analysis ----------------------------------------------------------
+  - id: 00_map_to_reference
+    script: code/02_analysis/00_map_to_reference.R
+    runtime: r
+    granularity: aggregate
+    conda_env: templates2-reticulate
+    summary: transfer labels from a reference Seurat object onto the query.
+    config_example: config_examples/02_analysis.yaml
+
+  - id: 03_cellcycle_analysis
+    script: code/02_analysis/01_cellcycle_analysis.R
+    runtime: r
+    granularity: aggregate
+    conda_env: null
+    summary: cell-cycle scoring (tricycle) and annotation.
+    config_example: config_examples/02_analysis.yaml
+
+  - id: 02_celltype_DEG_edgeR
+    script: code/02_analysis/02_celltype_DEG_edgeR.R
+    runtime: r
+    granularity: aggregate
+    conda_env: null
+    summary: pseudobulk differential expression per cell type (edgeR).
+    config_example: config_examples/02_analysis.yaml
+
+  - id: 03_enrichment
+    script: code/02_analysis/03_enrichment.R
+    runtime: r
+    granularity: aggregate
+    conda_env: null
+    summary: ORA / GSEA enrichment on DE results.
+    config_example: config_examples/02_analysis.yaml
+
+  - id: 04_sciRED_factor_analysis
+    script: code/02_analysis/04_sciRED_factor_analysis.py
+    runtime: python
+    granularity: aggregate
+    conda_env: templates2-scired
+    summary: sciRED residual factor decomposition; factor-covariate associations.
+    config_example: config_examples/02_analysis.yaml
+
+  - id: 05_benchmark_clustering
+    script: code/02_analysis/05_benchmark_clustering.R
+    runtime: r
+    granularity: aggregate
+    conda_env: null
+    summary: clustering quality metrics (silhouette, purity, modularity).
+    config_example: config_examples/02_analysis.yaml
+
+  # --- 03_signalling --------------------------------------------------------
+  - id: 00_nichenet_agnostic
+    script: code/03_signalling/REDO_00_nichenet_agnostic.R
+    runtime: r
+    granularity: aggregate
+    conda_env: null
+    summary: NicheNet sender-agnostic ligand activity for a receiver cell type.
+    config_example: config_examples/03_signalling.yaml
