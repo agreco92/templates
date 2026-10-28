@@ -284,8 +284,19 @@ if (normalization == "pool") {
     normalization.method = "LogNormalize",
     scale.factor = 1e4
   )
+} else if (normalization == "none") {
+  # counts layer already holds normalized values; use them as is
+  LayerData(seu, assay = "RNA", layer = "data") <- LayerData(
+    seu,
+    assay = "RNA",
+    layer = "counts"
+  )
 } else {
-  stop("normalization must be 'pool' or 'log', got '", normalization, "'.")
+  stop(
+    "normalization must be 'pool', 'log' or 'none', got '",
+    normalization,
+    "'."
+  )
 }
 
 # clustering and dr ------------------------------------------------------

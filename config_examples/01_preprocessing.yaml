@@ -38,7 +38,8 @@
   qc_patterns:
     mito: "^mt-"
     hb: "^Hb[^(p)]"
-  # normalization: "pool" (scran pooled size factors, default) or "log" (Seurat LogNormalize, scale.factor 1e4)
+  # normalization: "pool" (scran pooled size factors, default), "log" (Seurat LogNormalize, scale.factor 1e4)
+  #   or "none" (counts layer already holds normalized values; copied to data as is)
   normalization: pool
   # split_by: metadata column to use for splitting QC plots (null = use Sample)
   split_by: null

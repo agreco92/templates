@@ -21,8 +21,8 @@ The next obvious steps are to turn these into proper Nextflow modules and to con
 Tags mark points where the contract is stable enough to build on.
 
 ``` bash
-git clone --branch v0.2.0 <repo-url>       # fresh clone at a tag
-git checkout v0.2.0                        # or, in an existing clone
+git clone --branch v0.3.0 <repo-url>       # fresh clone at a tag
+git checkout v0.3.0                        # or, in an existing clone
 ```
 
 On GitHub, tags also appear under Releases as downloadable archives. `git tag -n99` lists what changed at each tag.
@@ -30,6 +30,8 @@ On GitHub, tags also appear under Releases as downloadable archives. `git tag -n
 `v0.1.0` is the first public release. `TEMPLATES2_HOME` is required from it onward.
 
 `v0.2.0` adds the optional `qc_patterns` and `normalization` keys to `01_qc_normalize_dr` (defaults keep the old mouse / pooled behavior) and makes `config$key` match exactly. Configs written for `v0.1.0` run unchanged unless they relied on prefix matching.
+
+`v0.3.0` adds `normalization: none` to `01_qc_normalize_dr` for objects whose `counts` layer already holds normalized values (it is copied to `data` unchanged). Existing configs run unchanged.
 
 ### How the template system works (30-second version)
 
