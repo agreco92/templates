@@ -29,6 +29,7 @@ Rscript <template>.R \
    (this is how per-sample QC thresholds are tuned, see `config_examples/liu_skin.yaml`)
 
 Returns a flat config object. Scripts read `config$key` (R) / `config["key"]`.
+In R it is a list of class `t2_config` whose `$` matches the key exactly.
 
 ## Path / data-flow conventions (the implicit DAG)
 
@@ -45,8 +46,10 @@ the documented config block. It is an index only, parameter docs stay in
 
 ## Gotchas
 
-- **R partial matching**: `config$remove` would match `config$remove_doublets`.
-  Config-driven `$` access is risky; prefer `config[["key"]]`.
+- **R partial matching**: base `$` on a list matches a key by prefix. The
+  top-level `config` is exact (`config$remove` is NULL even when
+  `remove_doublets` is set), but nested blocks are plain lists, so
+  `config$qc_thresholds$min` still partially matches; use `[[` there.
 - **utils path**: scripts source `code/utils/` from `$TEMPLATES2_HOME`, which
   the user sets in `.Renviron`. There is no detection fallback by design, an
   unset variable is a hard error. `--dir` locates the project's config and data

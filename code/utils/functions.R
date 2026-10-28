@@ -70,6 +70,9 @@ load_config_old <- function(
   return(config)
 }
 
+# exact-match config$key; base $ on a list silently accepts a key prefix
+`$.t2_config` <- function(x, name) .subset2(x, name)
+
 load_config <- function(
   project_dir,
   module_name,
@@ -81,6 +84,7 @@ load_config <- function(
   config <- c()
   config$projectDir <- project_dir
   config$sample_id <- sample_id
+  class(config) <- c("t2_config", "list")
 
   # Load module-specific YAML config
   yaml_path <- file.path(project_dir, "config", paste0(module_name, ".yaml"))

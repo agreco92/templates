@@ -20,7 +20,7 @@ templates:
     runtime: r
     granularity: per_sample
     conda_env: templates2-reticulate
-    summary: QC filtering, pooled normalization, PCA/UMAP, clustering, markers.
+    summary: QC filtering, pooled or log normalization, PCA/UMAP, clustering, markers.
     config_example: config_examples/01_preprocessing.yaml
 
   - id: 02_merge_samples

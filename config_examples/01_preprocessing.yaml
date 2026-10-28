@@ -33,6 +33,13 @@
     min_counts_log10: 3.6
     max_mito_pct: 10
     max_hb_pct: 0.05
+  # qc_patterns: gene-name regexes for percent.mt / percent.hb (defaults below are mouse)
+  #   - human: mito: "^MT-", hb: "^HB[ABDEGMQZ][0-9]*$"
+  qc_patterns:
+    mito: "^mt-"
+    hb: "^Hb[^(p)]"
+  # normalization: "pool" (scran pooled size factors, default) or "log" (Seurat LogNormalize, scale.factor 1e4)
+  normalization: pool
   # split_by: metadata column to use for splitting QC plots (null = use Sample)
   split_by: null
   # exclude: filter out cells based on metadata, e.g.: {tech: ["nucSeq"]}

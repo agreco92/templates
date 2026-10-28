@@ -21,13 +21,15 @@ The next obvious steps are to turn these into proper Nextflow modules and to con
 Tags mark points where the contract is stable enough to build on.
 
 ``` bash
-git clone --branch v0.1.0 <repo-url>       # fresh clone at a tag
-git checkout v0.1.0                        # or, in an existing clone
+git clone --branch v0.2.0 <repo-url>       # fresh clone at a tag
+git checkout v0.2.0                        # or, in an existing clone
 ```
 
 On GitHub, tags also appear under Releases as downloadable archives. `git tag -n99` lists what changed at each tag.
 
 `v0.1.0` is the first public release. `TEMPLATES2_HOME` is required from it onward.
+
+`v0.2.0` adds the optional `qc_patterns` and `normalization` keys to `01_qc_normalize_dr` (defaults keep the old mouse / pooled behavior) and makes `config$key` match exactly. Configs written for `v0.1.0` run unchanged unless they relied on prefix matching.
 
 ### How the template system works (30-second version)
 
@@ -41,7 +43,7 @@ Rscript <template>.R \
   --sample_id <sample>        # optional; selects a per-sample override block
 ```
 
-`load_config()` reads `<projectDir>/config/<module>.yaml`, pulls the named block, interpolates `{projectDir}` / `{sample_id}`, and overlays a per-sample override block if one matches. The script reads everything from `config`.
+`load_config()` reads `<projectDir>/config/<module>.yaml`, pulls the named block, interpolates `{projectDir}` / `{sample_id}`, and overlays a per-sample override block if one matches. The script reads everything from `config`, where `config$key` matches the key exactly (no R prefix matching).
 
 A generic script plus a project YAML gives one concrete analysis. To reuse a template on a new dataset, write a new config block instead of editing the script.
 

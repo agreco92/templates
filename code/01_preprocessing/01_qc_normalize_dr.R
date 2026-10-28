@@ -143,8 +143,10 @@ seu@active.assay <- "RNA"
 seu@assays[["HTO"]] <- NULL
 
 #
-seu[["percent.mt"]] <- PercentageFeatureSet(seu, pattern = "^mt-")
-seu[["percent.hb"]] <- PercentageFeatureSet(seu, pattern = "^Hb[^(p)]")
+mito_pattern <- config[["qc_patterns"]][["mito"]] %||% "^mt-"
+hb_pattern <- config[["qc_patterns"]][["hb"]] %||% "^Hb[^(p)]"
+seu[["percent.mt"]] <- PercentageFeatureSet(seu, pattern = mito_pattern)
+seu[["percent.hb"]] <- PercentageFeatureSet(seu, pattern = hb_pattern)
 seu[["nCount_RNA_log10"]] <- log10(seu$nCount_RNA)
 
 # add metadata from config -----------------------------------------------
@@ -268,12 +270,23 @@ if (!is.null(config$ambient_corrected_counts)) {
   seu@assays[["RNA"]] <- CreateAssayObject(counts = noamb[, Cells(seu)])
 }
 
-seu <- pool_normalize(
-  seurat_obj = seu,
-  do_clustering = TRUE,
-  cluster_col = NULL,
-  batch_col = NULL
-)
+normalization <- config[["normalization"]] %||% "pool"
+if (normalization == "pool") {
+  seu <- pool_normalize(
+    seurat_obj = seu,
+    do_clustering = TRUE,
+    cluster_col = NULL,
+    batch_col = NULL
+  )
+} else if (normalization == "log") {
+  seu <- NormalizeData(
+    seu,
+    normalization.method = "LogNormalize",
+    scale.factor = 1e4
+  )
+} else {
+  stop("normalization must be 'pool' or 'log', got '", normalization, "'.")
+}
 
 # clustering and dr ------------------------------------------------------
 seu <- FindVariableFeatures(seu)
