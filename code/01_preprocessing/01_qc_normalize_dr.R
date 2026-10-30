@@ -1,7 +1,5 @@
 set.seed(0110)
 options(future.globals.maxSize = 1000 * 1024^2)
-library(reticulate, quietly = T, verbose = F, warn.conflicts = F)
-# python interpreter comes from RETICULATE_PYTHON (see .Renviron.example)
 suppressPackageStartupMessages({
   library(tidyverse, quietly = T, verbose = F, warn.conflicts = F)
 
@@ -303,8 +301,7 @@ if (normalization == "pool") {
 seu <- FindVariableFeatures(seu)
 seu <- ScaleData(seu)
 seu <- RunPCA(seu, verbose = FALSE)
-# a, b = umap find_ab_params(1, 0.3); its scipy fit segfaults or corrupts memory when called through reticulate
-seu <- RunUMAP(seu, dims = 1:20, verbose = FALSE, densmap = T, a = 0.9921756197688717, b = 1.1122533842193434)
+seu <- RunUMAP(seu, dims = 1:20, verbose = FALSE)
 
 seu <- FindNeighbors(seu, dims = 1:20, verbose = FALSE)
 seu <- FindClusters(

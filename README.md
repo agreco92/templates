@@ -21,8 +21,8 @@ The next obvious steps are to turn these into proper Nextflow modules and to con
 Tags mark points where the contract is stable enough to build on.
 
 ``` bash
-git clone --branch v0.3.1 <repo-url>       # fresh clone at a tag
-git checkout v0.3.1                        # or, in an existing clone
+git clone --branch v0.3.2 <repo-url>       # fresh clone at a tag
+git checkout v0.3.2                        # or, in an existing clone
 ```
 
 On GitHub, tags also appear under Releases as downloadable archives. `git tag -n99` lists what changed at each tag.
@@ -34,6 +34,8 @@ On GitHub, tags also appear under Releases as downloadable archives. `git tag -n
 `v0.3.0` adds `normalization: none` to `01_qc_normalize_dr` for objects whose `counts` layer already holds normalized values (it is copied to `data` unchanged). Existing configs run unchanged.
 
 `v0.3.1` passes the UMAP curve parameters `a` and `b` to the densmap `RunUMAP` in `01_qc_normalize_dr`, precomputed for the Seurat defaults (`min.dist` 0.3, `spread` 1). umap-learn otherwise fits them with scipy, which segfaults or silently corrupts memory when called from R through reticulate. The embedding is unchanged.
+
+`v0.3.2` drops densMAP from `01_qc_normalize_dr`: `RunUMAP` uses Seurat's default uwot (R-native), so the template no longer calls Python and needs no `RETICULATE_PYTHON`. UMAP layouts change.
 
 ### How the template system works (30-second version)
 

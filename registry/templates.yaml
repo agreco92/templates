@@ -19,7 +19,7 @@ templates:
     script: code/01_preprocessing/01_qc_normalize_dr.R
     runtime: r
     granularity: per_sample
-    conda_env: templates2-reticulate
+    conda_env: null
     summary: QC filtering, pooled, log or no normalization, PCA/UMAP, clustering, markers.
     config_example: config_examples/01_preprocessing.yaml
 
