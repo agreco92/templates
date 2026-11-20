@@ -39,6 +39,8 @@ On GitHub, tags also appear under Releases as downloadable archives. `git tag -n
 
 `v0.4.0` lets `00_cellcalling_demux` take `cell_calling: cellranger` (use the barcodes of `outs/filtered_feature_bc_matrix`, set by `cellranger_filtered_subpath`, instead of emptyDrops). The default `emptydrops` is unchanged.
 
+`v0.5.0` adds an in-progress Python/scanpy port of `01_qc_normalize_dr` (`01_qc_normalize_dr.py`, config in `config_examples/01_preprocessing_python.yaml`). It adds a nuclearity filter and per-cell exclusion reasons. A Nextflow port of the pipeline comes next.
+
 ### How the template system works (30-second version)
 
 Every template is a standalone R/Python script with one calling convention:

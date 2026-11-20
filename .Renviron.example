@@ -8,6 +8,8 @@
 # nextflow.config, or bake them into the container.
 
 # Where templates2 is checked out. Templates load code/utils/ from here.
+# Standalone Python does not read .Renviron. Export this in the launching shell:
+# export TEMPLATES2_HOME=/path/to/templates2
 TEMPLATES2_HOME=/path/to/templates2
 
 # Python interpreter for reticulate (Leiden clustering, densMAP).

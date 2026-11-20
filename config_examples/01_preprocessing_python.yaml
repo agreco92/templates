@@ -1,0 +1,37 @@
+# Python port of 01_qc_normalize_dr. Copy to <projectDir>/config/, then run:
+#
+# export TEMPLATES2_HOME=/path/to/templates2
+# python "$TEMPLATES2_HOME/code/01_preprocessing/01_qc_normalize_dr.py" \
+#   --dir /path/to/lab_atlas \
+#   --module_name 01_preprocessing_python \
+#   --sample_id cdaa_lsec
+
+01_qc_normalize_dr:
+  sample_dir: data/run03/00_ingest              # input root, relative to projectDir
+  input_filename: LSEC_SD1.h5ad                 # null or "auto": sole .h5ad
+  dir_output: "{projectDir}/data/run03/01_qc_normalize_dr/{sample_id}"   # processed object
+  dir_figures: "{projectDir}/figures/run03/01_qc_normalize_dr/{sample_id}" # QC figures
+
+  qc_thresholds:
+    max_mito_pct: 10                            # max percent mitochondrial counts
+    min_counts_log10: 3.5                       # min log10 total counts
+    min_features: 300                           # min detected genes
+    nuclearity_above: 1.2                       # max log2 Malat1 / ribo
+    nuclearity_below: -5.0                      # min log2 Malat1 / ribo
+  qc_patterns:
+    mito: "^mt-"                                # mitochondrial gene regex
+    ribo: '^RP[SL]\d+[AXY]?L?\d*$|^RPSA$|^RPLP\d$'  # ribosomal gene regex, case-insensitive
+    hb: "^Hb[^(p)]"                             # hemoglobin gene regex, case-insensitive
+
+  remove_doublets: true                         # run scrublet, drop predicted doublets
+  exclude: null                                 # {obs_column: [values]} cells to drop
+
+  metadata:                                     # constant obs columns for every cell
+    sample_id: pippo
+  metadata_csv: null                            # per-sample obs columns from CSV
+  # metadata_csv:
+  #   path: metadata/samples.csv                # relative to projectDir
+  #   sample_column: sample_id                  # CSV column matching sample_id
+  #   columns: [condition, sex]                 # null: all other columns
+
+# Per-sample overrides: <sample_id>: {01_qc_normalize_dr: {...}}. Nested blocks replace wholesale.

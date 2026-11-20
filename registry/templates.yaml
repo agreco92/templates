@@ -23,6 +23,14 @@ templates:
     summary: QC filtering, pooled, log or no normalization, PCA/UMAP, clustering, markers.
     config_example: config_examples/01_preprocessing.yaml
 
+  - id: 01_qc_normalize_dr_py
+    script: code/01_preprocessing/01_qc_normalize_dr.py
+    runtime: python
+    granularity: per_sample
+    conda_env: null    # no env file yet; tested with scanpy 1.11.4
+    summary: Python port (in progress). QC with nuclearity, scrublet, libsize normalization, PCA/UMAP.
+    config_example: config_examples/01_preprocessing_python.yaml
+
   - id: 02_merge_samples
     script: code/01_preprocessing/02_merge_samples.R
     runtime: r
