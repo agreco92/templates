@@ -3,6 +3,10 @@
   sample_dir: data/00_download_data/
   # sample_subpath: subfolder within sample containing raw matrix
   sample_subpath: "outs/raw_feature_bc_matrix"
+  # cell_calling: "emptydrops" (default) or "cellranger" (barcodes of the filtered matrix, emptyDrops skipped)
+  cell_calling: emptydrops
+  # cellranger_filtered_subpath: filtered matrix folder, used only when cell_calling is "cellranger"
+  cellranger_filtered_subpath: "outs/filtered_feature_bc_matrix"
   # dropletutils_fdr: FDR threshold for emptyDrops cell calling
   dropletutils_fdr: 0.001778279  # 10^(-2.75)
   # hto_demultiplex: whether to run HTO demultiplexing

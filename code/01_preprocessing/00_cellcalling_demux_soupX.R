@@ -194,27 +194,67 @@ cat("Raw Gene Expression barcodes:", ncol(gex_counts_raw), "\n")
 
 # cell calling  -------------------------------------------------------------
 
-cat("Running emptyDrops for cell calling...\n")
-e.out <- emptyDrops(gex_counts_raw, test.ambient = TRUE)
-fdr_threshold <- config$dropletutils_fdr
+cell_calling <- config$cell_calling %||% "emptydrops"
+if (!cell_calling %in% c("emptydrops", "cellranger")) {
+  stop(
+    "Error: cell_calling must be 'emptydrops' or 'cellranger', got: ",
+    cell_calling
+  )
+}
 
-# Identify cells passing FDR threshold
-is_cell <- which(e.out$FDR <= fdr_threshold)
+if (cell_calling == "cellranger") {
+  cat("Using Cell Ranger cell calls...\n")
+  cr_barcodes_file <- file.path(
+    config$sample_dir,
+    config$sample_id,
+    config$cellranger_filtered_subpath %||% "outs/filtered_feature_bc_matrix",
+    "barcodes.tsv.gz"
+  )
+  if (!file.exists(cr_barcodes_file)) {
+    stop("Error: Cell Ranger barcodes file does not exist: ", cr_barcodes_file)
+  }
+  cr_barcodes <- readLines(cr_barcodes_file)
+  frac_in_raw <- mean(cr_barcodes %in% colnames(gex_counts_raw))
+  if (!isTRUE(frac_in_raw >= 0.95)) {
+    stop(
+      "Error: only ",
+      round(100 * frac_in_raw, 1),
+      "% of Cell Ranger barcodes are in the raw matrix (barcode suffix mismatch?)"
+    )
+  }
+  fdr_threshold <- NA_real_
+  is_cell <- which(colnames(gex_counts_raw) %in% cr_barcodes)
+  gex_low_umi_q01 <- log10(quantile(
+    Matrix::colSums(gex_counts_raw[, is_cell]),
+    probs = .01
+  ))
+  n_barcodes <- ncol(gex_counts_raw)
+  cat("Cells called (Cell Ranger):", length(is_cell), "\n\n")
+} else {
+  cat("Running emptyDrops for cell calling...\n")
+  e.out <- emptyDrops(gex_counts_raw, test.ambient = TRUE)
+  fdr_threshold <- config$dropletutils_fdr
 
-gex_low_umi_q01 <- log10(quantile(
-  e.out$Total[e.out$FDR < fdr_threshold],
-  probs = .01,
-  na.rm = TRUE
-))
+  # Identify cells passing FDR threshold
+  is_cell <- which(e.out$FDR <= fdr_threshold)
+
+  gex_low_umi_q01 <- log10(quantile(
+    e.out$Total[e.out$FDR < fdr_threshold],
+    probs = .01,
+    na.rm = TRUE
+  ))
+  n_barcodes <- nrow(e.out)
+
+  cat(
+    "Cells called (FDR <",
+    fdr_threshold,
+    "):",
+    length(is_cell),
+    "\n\n"
+  )
+}
+
 bc_rank <- barcodeRanks(gex_counts_raw)
-
-cat(
-  "Cells called (FDR <",
-  fdr_threshold,
-  "):",
-  length(is_cell),
-  "\n\n"
-)
 
 # Filter to called cells
 gex_counts <- gex_counts_raw[, is_cell]
@@ -326,10 +366,12 @@ seu <- CreateSeuratObject(
 )
 
 # Add cellcalling stats to seurat object
-e.out_merge <- e.out[, c("LogProb", "FDR")] |> as.data.frame()
-seu@meta.data[, paste0("du_", colnames(e.out_merge))] <- e.out_merge[
-  rownames(seu@meta.data),
-]
+if (cell_calling == "emptydrops") {
+  e.out_merge <- e.out[, c("LogProb", "FDR")] |> as.data.frame()
+  seu@meta.data[, paste0("du_", colnames(e.out_merge))] <- e.out_merge[
+    rownames(seu@meta.data),
+  ]
+}
 
 # Add SoupX info to metadata (if ambient correction was run)
 if (isTRUE(config$ambient_correction) && !is.null(sc)) {
@@ -408,21 +450,37 @@ saveRDS(
   file.path(config$dir_output, "cell_call_demux.rds")
 )
 
-saveRDS(
-  e.out,
-  file.path(config$dir_output, "dropletutils.rds")
-)
+if (cell_calling == "emptydrops") {
+  saveRDS(
+    e.out,
+    file.path(config$dir_output, "dropletutils.rds")
+  )
+} else {
+  saveRDS(
+    data.frame(
+      barcode = colnames(gex_counts),
+      Total = Matrix::colSums(gex_counts),
+      method = "cellranger"
+    ),
+    file.path(config$dir_output, "dropletutils.rds")
+  )
+}
 
 # Save summary statistics
 summary_stats <- data.frame(
   sample_id = config$sample_id,
-  total_barcodes = nrow(e.out),
-  cells_called = sum(e.out$FDR <= fdr_threshold, na.rm = TRUE),
+  total_barcodes = n_barcodes,
+  cells_called = length(is_cell),
   fdr_threshold = fdr_threshold,
   final_cells = ncol(seu),
   ambient_correction = isTRUE(config$ambient_correction),
   total_counts_original = sum(gex_counts)
 )
+
+if (cell_calling == "cellranger") {
+  summary_stats$cell_calling <- cell_calling
+  summary_stats$n_cells_called <- length(is_cell)
+}
 
 if (isTRUE(config$ambient_correction)) {
   summary_stats$mean_contamination_fraction <- mean(sc$metaData$rho)
@@ -447,6 +505,8 @@ cat("Generating diagnostic plots...\n")
 
 ## cell calling plots -----------------------------------------------------
 
+q01_method <- if (cell_calling == "cellranger") "cellranger" else "dropletutils"
+
 p_bcrank <- bc_rank |>
   as.data.frame() |>
   filter(!duplicated(bc_rank$rank)) |>
@@ -466,11 +526,20 @@ p_bcrank <- bc_rank |>
     "text",
     x = 5,
     y = gex_low_umi_q01 + 0.1,
-    label = "q01 dropletutils",
+    label = paste("q01", q01_method),
     col = "firebrick",
     hjust = 0
   ) +
   ggtitle(paste0(config$sample_id, " - Barcode Rank Plot"))
+
+if (cell_calling == "cellranger") {
+  p_bcrank <- p_bcrank +
+    ggrastr::geom_point_rast(
+      data = as.data.frame(bc_rank[colnames(gex_counts), ]),
+      colour = "firebrick",
+      stroke = 0
+    )
+}
 
 ggsave(
   file.path(config$dir_figures, "barcode_rank.pdf"),
@@ -479,37 +548,39 @@ ggsave(
   height = 5
 )
 
-p_fdr_hist <- e.out |>
-  as.data.frame() |>
-  filter(!is.na(FDR), Total > 300) |>
-  mutate(
-    min_pos = suppressWarnings(min(FDR[FDR > 0], na.rm = TRUE)),
-    min_pos = ifelse(is.finite(min_pos), min_pos, 1e-300),
-    FDR_adj = if_else(FDR > 0, FDR, min_pos / 10)
-  ) |>
-  ggplot(aes(x = FDR_adj)) +
-  geom_histogram(
-    bins = 30,
-    color = "grey20",
-    fill = "grey70",
-    linewidth = 0.2
-  ) +
-  geom_vline(xintercept = fdr_threshold, linetype = "dashed") +
-  scale_x_log10() +
-  scale_y_continuous(trans = "log10") +
-  labs(
-    title = paste0(config$sample_id, " - FDR Histogram"),
-    subtitle = "Droplets with >300 UMIs",
-    x = "FDR (log10)",
-    y = "Count (log10)"
-  )
+if (cell_calling == "emptydrops") {
+  p_fdr_hist <- e.out |>
+    as.data.frame() |>
+    filter(!is.na(FDR), Total > 300) |>
+    mutate(
+      min_pos = suppressWarnings(min(FDR[FDR > 0], na.rm = TRUE)),
+      min_pos = ifelse(is.finite(min_pos), min_pos, 1e-300),
+      FDR_adj = if_else(FDR > 0, FDR, min_pos / 10)
+    ) |>
+    ggplot(aes(x = FDR_adj)) +
+    geom_histogram(
+      bins = 30,
+      color = "grey20",
+      fill = "grey70",
+      linewidth = 0.2
+    ) +
+    geom_vline(xintercept = fdr_threshold, linetype = "dashed") +
+    scale_x_log10() +
+    scale_y_continuous(trans = "log10") +
+    labs(
+      title = paste0(config$sample_id, " - FDR Histogram"),
+      subtitle = "Droplets with >300 UMIs",
+      x = "FDR (log10)",
+      y = "Count (log10)"
+    )
 
-ggsave(
-  file.path(config$dir_figures, "fdr_histogram.pdf"),
-  p_fdr_hist,
-  width = 5,
-  height = 5
-)
+  ggsave(
+    file.path(config$dir_figures, "fdr_histogram.pdf"),
+    p_fdr_hist,
+    width = 5,
+    height = 5
+  )
+}
 
 ## HTO plots --------------------------------------------------------------
 

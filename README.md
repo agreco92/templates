@@ -37,6 +37,8 @@ On GitHub, tags also appear under Releases as downloadable archives. `git tag -n
 
 `v0.3.2` drops densMAP from `01_qc_normalize_dr`: `RunUMAP` uses Seurat's default uwot (R-native), so the template no longer calls Python and needs no `RETICULATE_PYTHON`. UMAP layouts change.
 
+`v0.4.0` lets `00_cellcalling_demux` take `cell_calling: cellranger` (use the barcodes of `outs/filtered_feature_bc_matrix`, set by `cellranger_filtered_subpath`, instead of emptyDrops). The default `emptydrops` is unchanged.
+
 ### How the template system works (30-second version)
 
 Every template is a standalone R/Python script with one calling convention:
